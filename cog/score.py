@@ -1,49 +1,52 @@
+import datetime
 from discord import app_commands, SelectOption, Interaction, TextStyle, Embed, Object
 from discord.ext import commands
 from discord.ui import View, Select, Modal, TextInput
 
+dt_now = datetime.datetime.now()
+
 mainOp = {
-    "flower": ["HP"],
-    "plume": ["ATK"],
-    "sand": ["HP%", "ATK%", "DEF%", "Elemental Mastery", "Energy Recharge%"],
-    "goblet": ["HP%", "ATK%", "DEF%", "Elemental Mastery", "Elemental Damage Bonus%"],
-    "circlet": ["HP%", "ATK%", "DEF%", "Elemental Mastery", "Healing Bonus%", "Crit Rate%", "Crit DMG%"]
+    "生の花": ["HP"],
+    "死の羽": ["攻撃力"],
+    "時の砂": ["HP%", "攻撃力%", "防御力%", "元素熟知", "元素チャージ効率"],
+    "空の杯": ["HP%", "攻撃力%", "防御力%", "元素熟知", "元素ダメージバフ"],
+    "理の冠": ["HP%", "攻撃力%", "防御力%", "元素熟知", "与える治癒効果%", "会心率", "会心ダメージ"]
 }
 
 subOp = [
-    "ATK",
-    "ATK%",
-    "DEF",
-    "DEF%",
+    "攻撃力",
+    "攻撃力%",
+    "防御力",
+    "防御力%",
     "HP",
     "HP%",
-    "Elemental Mastery",
-    "Energy Recharge%",
-    "Crit Rate%",
-    "Crit DMG%"
+    "元素熟知",
+    "元素チャージ効率",
+    "会心率",
+    "会心ダメージ"
 ]
 
 class ArtifactBaseSelectView(View):
     def __init__(self):
-        super().__init__(timeout=300)
+        super().__init__(timeout=90)
         self.add_item(ArtifactBaseSelect())
 
 
 class ArtifactBaseSelect(Select):
     def __init__(self):
         options = []
-        options.append(SelectOption(label="flower", emoji="<:PaleFlameStainlessBloom:1054994317300740216>", description="HP"))
-        options.append(SelectOption(label="plume", emoji="<:PaleFlameWiseDoctorsPinion:1054994302478057482>", description="ATK"))
-        options.append(SelectOption(label="sand", emoji="<:PaleFlameMomentofCessation:1054994289588981770>", description=",".join(mainOp["sand"])))
-        options.append(SelectOption(label="goblet", emoji="<:PaleFlameSurpassingCup:1054994275915534366>", description=",".join(mainOp["goblet"])))
-        options.append(SelectOption(label="circlet", emoji="<:PaleFlameMockingMask:1054994253190807552>", description=",".join(mainOp["circlet"])))
+        options.append(SelectOption(label="生の花", emoji="<:PaleFlameStainlessBloom:1054994317300740216>", description="HP"))
+        options.append(SelectOption(label="死の羽", emoji="<:PaleFlameWiseDoctorsPinion:1054994302478057482>", description="攻撃力"))
+        options.append(SelectOption(label="時の砂", emoji="<:PaleFlameMomentofCessation:1054994289588981770>", description=",".join(mainOp["時の砂"])))
+        options.append(SelectOption(label="空の杯", emoji="<:PaleFlameSurpassingCup:1054994275915534366>", description=",".join(mainOp["空の杯"])))
+        options.append(SelectOption(label="理の冠", emoji="<:PaleFlameMockingMask:1054994253190807552>", description=",".join(mainOp["理の冠"])))
 
-        super().__init__(placeholder="select main Artifact types", min_values=1, max_values=1, options=options)
+        super().__init__(placeholder="聖遺物を選んでください", min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: Interaction):
         view = View()
         view.add_item(ArtifactSuboptionSelect(self.values[0]))
-        await interaction.response.edit_message(content="select sub options.", view=view)
+        await interaction.response.edit_message(content="サブオプションを選んでください", view=view)
 
 class ArtifactSuboptionSelect(Select):
     def __init__(self, mainType: str):
@@ -51,7 +54,7 @@ class ArtifactSuboptionSelect(Select):
             self.mainType = mainType
             for v in subOp:
                 self.listSubOption.append(SelectOption(label=v))
-            super().__init__(placeholder="select sub options ※Up to 4 options available", max_values=4, options=self.listSubOption)
+            super().__init__(placeholder="サブオプションを選択 ※最高4つまで選択できます", max_values=4, options=self.listSubOption)
 
     async def callback(self, interaction: Interaction):
         result = []
@@ -62,7 +65,7 @@ class ArtifactSuboptionSelect(Select):
 
 class ArtifactSuboptionValueModal(Modal):
     def __init__(self, list: list, mainType: str):
-        super().__init__(title="numeric entry", timeout=300)
+        super().__init__(title="数値を入力してください", timeout=300)
         self.list = list
         self.mainType = mainType
 
@@ -70,79 +73,79 @@ class ArtifactSuboptionValueModal(Modal):
             self.contentA = TextInput(
                 label=f"{self.list[0]}",
                 style=TextStyle.short,
-                placeholder=f"{self.list[0]} value",
+                placeholder=f"{self.list[0]}の数値",
                 required=True
             )
             self.add_item(self.contentA)
         except:
-            print("Null")
+            pass
         try:
             self.contentB = TextInput(
                 label=f"{self.list[1]}",
                 style=TextStyle.short,
-                placeholder=f"{self.list[1]} value",
+                placeholder=f"{self.list[1]}の数値",
                 required=True
             )
             self.add_item(self.contentB)
         except:
-            print("Null")
+            pass
         try:
             self.contentC = TextInput(
                 label=f"{self.list[2]}",
                 style=TextStyle.short,
-                placeholder=f"{self.list[2]} value",
+                placeholder=f"{self.list[2]}の数値",
                 required=True
             )
             self.add_item(self.contentC)
         except:
-            print("Null")
+            pass
         try:
             self.contentD = TextInput(
                 label=f"{self.list[3]}",
                 style=TextStyle.short,
-                placeholder=f"{self.list[3]} value",
+                placeholder=f"{self.list[3]}の数値",
                 required=True
             )
             self.add_item(self.contentD)
         except:
-            print("Null")
+            pass
 
     async def on_submit(self, interaction: Interaction):
         result = {}
         try:
             result[self.list[0]] = self.contentA.value
         except:
-            print("Null")
+            pass
         try:
             result[self.list[1]] = self.contentB.value
         except:
-            print("Null")
+            pass
         try:
             result[self.list[2]] = self.contentC.value
         except:
-            print("Null")
+            pass
         try:
             result[self.list[3]] = self.contentD.value
         except:
-            print("Null")
+            pass
 
         view = View()
         view.add_item(ArtifactScoreSelectView(result, self.mainType))
 
-        await interaction.response.edit_message(content="Score Calculation Methods", view=view)
+        await interaction.response.edit_message(content="スコアの計算方式を選択してください", view=view)
 
 class ArtifactScoreSelectView(Select):
     def __init__(self, resultDict: dict, mainType: str):
         options = []
         self.mainType = mainType
         self.subDict = resultDict
-        options.append(SelectOption(label="Crit build", description=r"ATK%+Crit Rate%x2+Crit DMG%"))
-        options.append(SelectOption(label="HP build", description=r"HP%+Crit Rate%x2+Crit DMG%"))
-        options.append(SelectOption(label="DEF build", description=r"DEF%+Crit Rate%x2+Crit DMG%"))
-        options.append(SelectOption(label="Energy Recharge build", description=r"Energy Recharge%+Crit Rate%x2+Crit DMG%"))
-        options.append(SelectOption(label="Elemental Mastery build", description=r"(Elemental Mastery+Crit Rate%x2+Crit DMG)/2"))
+        options.append(SelectOption(label="会心ビルド", description=r"攻撃力%+会心率×2+会心ダメージ"))
+        options.append(SelectOption(label="HPビルド", description=r"HP%+会心率×2+会心ダメージ"))
+        options.append(SelectOption(label="防御力ビルド", description=r"防御力%+会心率×2+会心ダメージ"))
+        options.append(SelectOption(label="元素チャージ効率ビルド", description=r"元素チャージ効率+会心率×2+会心ダメージ"))
+        options.append(SelectOption(label="元素熟知ビルド", description=r"(元素熟知+会心率×2+会心ダメージ)÷2"))
 
-        super().__init__(placeholder="Select a score calculation method", options=options)
+        super().__init__(placeholder="選択してください", options=options)
 
     async def callback(self, interaction: Interaction):
         try:
@@ -156,49 +159,49 @@ class ArtifactScoreSelectView(Select):
 
             result = 0
 
-            if self.values[0] == "Crit build":
+            if self.values[0] == "会心ビルド":
                 for k, v in self.subDict.items():
-                    if k == "ATK%":
+                    if k == "攻撃力%":
                         attack = v
-                    elif k == "Crit Rate%":
+                    elif k == "会心率":
                         rate = v
-                    elif k == "Crit DMG%":
+                    elif k == "会心ダメージ":
                         damage = v
                 result = float(attack) + float(rate)*2 + float(damage)
-            elif self.values[0] == "HP build":
+            elif self.values[0] == "HPビルド":
                 for k, v in self.subDict.items():
                     if k == "HP%":
                         hp = v
-                    elif k == "Crit Rate%":
+                    elif k == "会心率":
                         rate = v
-                    elif k == "Crit DMG%":
+                    elif k == "会心ダメージ":
                         damage = v
                 result = float(hp) + float(rate)*2 + float(damage)
-            elif self.values[0] == "DEF build":
+            elif self.values[0] == "防御力ビルド":
                 for k, v in self.subDict.items():
-                    if k == "DEF%":
+                    if k == "防御力%":
                         defense = v
-                    elif k == "Crit Rate%":
+                    elif k == "会心率":
                         rate = v
-                    elif k == "Crit DMG%":
+                    elif k == "会心ダメージ":
                         damage = v
                 result = float(defense) + float(rate)*2 + float(damage)
-            elif self.values[0] == "Energy Recharge build":
+            elif self.values[0] == "元素チャージ効率ビルド":
                 for k, v in self.subDict.items():
-                    if k == "Energy Recharge%":
+                    if k == "元素チャージ効率":
                         charge = v
-                    elif k == "Crit Rate%":
+                    elif k == "会心率":
                         rate = v
-                    elif k == "Crit DMG%":
+                    elif k == "会心ダメージ":
                         damage = v
                 result = float(charge) + float(rate)*2 + float(damage)
-            elif self.values[0] == "Elemental Mastery build":
+            elif self.values[0] == "元素熟知ビルド":
                 for k, v in self.subDict.items():
-                    if k == "Elemental Mastery":
+                    if k == "元素熟知":
                         mastery = v
-                    elif k == "Crit Rate%":
+                    elif k == "会心率":
                         rate = v
-                    elif k == "Crit DMG%":
+                    elif k == "会心ダメージ":
                         damage = v
                 result = float(mastery) + float(rate)*2 + float(damage)
                 result /= 2
@@ -206,9 +209,14 @@ class ArtifactScoreSelectView(Select):
             print(str(round(result, 1)))
             print(self.subDict)
 
-            embed = Embed(title="Artifact score calculation results", color=0x1e90ff, description=f"score: **{str(round(result, 1))}**")
+            r_value = ["攻撃力", "防御力", "HP", "元素熟知"]
+            embed = Embed(title="聖遺物スコア", color=0x1e90ff, description=f"**{self.mainType}**\nスコア: **{str(round(result, 1))}**")
+            embed.set_footer(text=f"{dt_now.strftime('%Y年%m月%d日 %H:%M:%S')}/{self.values[0]}")
             for key, val in self.subDict.items():
-                embed.add_field(name=f"**{key}**", value=val)
+                if key not in r_value:
+                    embed.add_field(name=f"**{key}**", value=f"{val}%")
+                else:
+                    embed.add_field(name=f"**{key}**", value=val)
             await interaction.response.edit_message(content=None, view=None, embed=embed)
             print(f"executor:{interaction.user.name}\nartifact score - show results...")
 
@@ -222,10 +230,11 @@ class Score(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @app_commands.command(name="score", description="Calculate Artifact score by selecting build.")
+    @app_commands.command(name="score", description="聖遺物スコアをビルド選択方式で算出します。")
     async def score(self, interaction: Interaction):
-        await interaction.response.send_message(content="Select your Artifact types", view=ArtifactBaseSelectView())
+        await interaction.response.send_message(content="聖遺物のタイプを選択してください", view=ArtifactBaseSelectView())
         print(f"executor:{interaction.user.name}\ncommand - command activate")
+
 
 async def setup(bot):
     await bot.add_cog(Score(bot), guilds=[Object(id=993066051417944064)])
