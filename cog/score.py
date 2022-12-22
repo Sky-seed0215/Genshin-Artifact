@@ -231,9 +231,15 @@ class Score(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="score", description="聖遺物スコアをビルド選択方式で算出します。")
+    @app_commands.checks.cooldown(1, 7)
     async def score(self, interaction: Interaction):
         await interaction.response.send_message(content="聖遺物のタイプを選択してください", view=ArtifactBaseSelectView())
         print(f"executor:{interaction.user.name}\ncommand - command activate")
+
+    @score.error
+    async def on_score_error(self, interaction: Interaction, err: app_commands.AppCommandError):
+        if isinstance(err, app_commands.CommandOnCooldown):
+            return await interaction.response.send_message(f"コマンドはクールダウン中です。{round(err.retry_after, 2)}秒後にクールダウンは解除されます。")
 
 
 async def setup(bot):
