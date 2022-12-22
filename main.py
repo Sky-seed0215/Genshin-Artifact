@@ -12,6 +12,7 @@ class MyBot(commands.Bot):
 
     async def on_ready(self):
         await self.load_extension("jishaku")
+        await self.load_extension("cog.score")
         os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
         os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
         print('Logged on as')
@@ -23,4 +24,4 @@ class MyBot(commands.Bot):
 
 if __name__ == "__main__":
     bot = MyBot()
-    bot.run(TOKEN)
+    bot.run(str(TOKEN))
